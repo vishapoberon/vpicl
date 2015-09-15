@@ -1,5 +1,5 @@
 MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
-  IMPORT Texts, Oberon;
+  IMPORT Texts;
   
   CONST IdLen* = 32; NofKeys = 25;
     (*symbols*) null = 0;
