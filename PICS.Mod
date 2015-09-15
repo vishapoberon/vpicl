@@ -1,5 +1,5 @@
 MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
-  IMPORT Texts;
+  IMPORT Texts := CompatTexts;
   
   CONST IdLen* = 32; NofKeys = 25;
     (*symbols*) null = 0;
@@ -13,6 +13,8 @@ MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
     semicolon = 36; end = 37; else = 38 ; elsif =  39; until =  40; return = 41;
     int = 42; set = 43; bool = 44;
     const = 50; begin = 51; proced = 52; module = 53; eof = 54;
+  
+  TYPE keyword = ARRAY 16 OF CHAR;
 
   VAR val*, typ*: INTEGER;
     id*: ARRAY IdLen OF CHAR;
@@ -21,7 +23,7 @@ MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
     K: INTEGER;
     R: Texts.Reader;
     W: Texts.Writer;
-    key: ARRAY NofKeys, 16 OF CHAR;
+    key: ARRAY NofKeys OF keyword;
     symno: ARRAY NofKeys OF INTEGER;
 
   PROCEDURE position*(): LONGINT;
@@ -119,7 +121,11 @@ MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
   END Init;
 
   PROCEDURE Enter(word: ARRAY OF CHAR; val: INTEGER);
-  BEGIN key[K] := word; symno[K] := val; INC(K)
+  BEGIN 
+     (*key[K] := word;*)
+     COPY(word, key[K]);
+	 symno[K] := val;
+	 INC(K)
   END Enter;
   
 BEGIN Texts.OpenWriter(W); K := 0;
