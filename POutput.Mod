@@ -19,6 +19,7 @@ TYPE Int32 = INTEGER;
         Files.WriteInt(r, code[i]);
      INC(i)
      END;
+	 Files.Register(f);
   END DumpCode;
 
 
