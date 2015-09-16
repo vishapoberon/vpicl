@@ -4,7 +4,7 @@ SETPATH = MODULES=".:x86_64"
 VOC = $(SETPATH) /opt/voc/bin/voc
 
 all:
-	$(VOC) -s CompatFiles.Mod Fonts.Mod CompatTexts.Mod Oberon.Mod PICS.Mod PICL.Mod -m
+	$(VOC) -s PTypes.Mod POutput.Mod CompatFiles.Mod Fonts.Mod CompatTexts.Mod Oberon.Mod PICS.Mod PICL.Mod -m
 
 clean:
 	rm *.sym

@@ -1,5 +1,5 @@
 MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
-  IMPORT Texts := CompatTexts;
+  IMPORT Texts := CompatTexts, PTypes;
   
   CONST IdLen* = 32; NofKeys = 25;
     (*symbols*) null = 0;
@@ -14,24 +14,26 @@ MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
     int = 42; set = 43; bool = 44;
     const = 50; begin = 51; proced = 52; module = 53; eof = 54;
   
+  TYPE Int32 = PTypes.Int32;
+
   TYPE keyword = ARRAY 16 OF CHAR;
 
-  VAR val*, typ*: INTEGER;
+  VAR val*, typ*: Int32;
     id*: ARRAY IdLen OF CHAR;
 
     ch: CHAR;  (*lookahead*)
-    K: INTEGER;
+    K: Int32;
     R: Texts.Reader;
     W: Texts.Writer;
     key: ARRAY NofKeys OF keyword;
-    symno: ARRAY NofKeys OF INTEGER;
+    symno: ARRAY NofKeys OF Int32;
 
   PROCEDURE position*(): LONGINT;
   BEGIN RETURN Texts.Pos(R)
   END position;
   
-  PROCEDURE Ident(VAR sym: INTEGER);
-    VAR i, j, m: INTEGER;
+  PROCEDURE Ident(VAR sym: Int32);
+    VAR i, j, m: Int32;
   BEGIN i := 0;
     REPEAT
       IF i < IdLen-1 THEN id[i] := ch; INC(i) END ;
@@ -52,8 +54,8 @@ MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
     UNTIL (ch < "0") OR (ch > "9")
   END Number;
 
-  PROCEDURE GetDigit(): INTEGER;
-    VAR d: INTEGER;
+  PROCEDURE GetDigit(): Int32;
+    VAR d: Int32;
   BEGIN
     IF ("0" <= ch) & (ch <= "9") THEN d := ORD(ch) - 30H
     ELSIF ("A" <= ch) & (ch <= "F") THEN d := ORD(ch) - 37H
@@ -63,11 +65,11 @@ MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
   END GetDigit;
 
   PROCEDURE Hex;
-    VAR d1, d0: INTEGER;
+    VAR d1, d0: Int32;
   BEGIN val := GetDigit()*10H + GetDigit(); typ := 2
   END Hex;
 
-  PROCEDURE Get*(VAR sym: INTEGER);
+  PROCEDURE Get*(VAR sym: Int32);
   BEGIN
     WHILE (ch <= " ") OR (ch = "{") DO
       IF ch = "{" THEN
@@ -120,7 +122,7 @@ MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
   BEGIN Texts.OpenReader(R, T, pos); Texts.Read(R, ch)
   END Init;
 
-  PROCEDURE Enter(word: ARRAY OF CHAR; val: INTEGER);
+  PROCEDURE Enter(word: ARRAY OF CHAR; val: Int32);
   BEGIN 
      (*key[K] := word;*)
      COPY(word, key[K]);
