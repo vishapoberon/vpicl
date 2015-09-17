@@ -12,7 +12,7 @@ TYPE Int32 = INTEGER;
   BEGIN
      i := 0;
 	 COPY(name, fname);
-	 Strings.Append(".out", fname);
+	 Strings.Append(".bin", fname);
 	 f := Files.New(fname);
 	 Files.Set(r, f, 0);
      WHILE i < pc DO
