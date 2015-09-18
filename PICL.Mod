@@ -1,5 +1,5 @@
 MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
-  IMPORT Texts := CompatTexts, Oberon, PICS, SYSTEM, POutput, PTypes;
+  IMPORT Texts := CompatTexts, Oberon, PICS, SYSTEM, PErrors, POutput, PTypes;
 
   CONST var = 1; con = 2; proc = 3;   (*item forms*)
     intT = 1; setT = 2; boolT = 3;    (*types*)
@@ -48,6 +48,7 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     IF p > errpos+2 THEN
       Texts.WriteString(W, "  pos "); Texts.WriteInt(W, p, 1);
       Texts.WriteString(W, "  err "); Texts.WriteInt(W, num, 1);
+	  Texts.WriteString(W, " "); Texts.WriteString(W, PErrors.errors[num]);
       Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
 	  Oberon.DumpLog;
     END ;
