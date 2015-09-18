@@ -9,7 +9,11 @@ all:
 static:
 	$(VOC) -s PErrors.Mod PTypes.Mod POutput.Mod CompatFiles.Mod Fonts.Mod CompatTexts.Mod Oberon.Mod PICS.Mod PICL.Mod -M
 
+install:
+	cp PICL /usr/local/bin/
 
+uninstall:
+	rm -rf /usr/local/bin/PICL
 
 clean:
 	rm *.sym
