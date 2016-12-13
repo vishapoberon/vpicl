@@ -1,9 +1,9 @@
 MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
-  IMPORT Texts := CompatTexts, Oberon, PICS, SYSTEM, PErrors, POutput, PTypes;
+  IMPORT Texts, Oberon, PICS, SYSTEM;
 
   CONST var = 1; con = 2; proc = 3;   (*item forms*)
     intT = 1; setT = 2; boolT = 3;    (*types*)
-    gpio= -32; gpoc = -28; (*general-purpose, 2-bit I/O data and output control*)
+    gpio= -32; gpoc = -28;  (*general-purpose, 2-bit I/O data and output control*)
 
     (*symbols*) null = 0;
     ast = 1; slash = 2; plus = 3; minus = 4; not = 5; and = 6; or = 7;
@@ -17,40 +17,35 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     int = 42; set = 43; bool = 44;
     const = 50; begin = 51; proced = 52; module = 53; eof = 54;
 
-  TYPE Int32 = PTypes.Int32;
-
   TYPE Object = POINTER TO ObjDesc;
     ObjDesc = RECORD
         name: ARRAY PICS.IdLen OF CHAR;
-        form, typ, ptyp, a: Int32;
+        form, typ, ptyp, a: INTEGER;
         next: Object
       END ;
 
     OpCode = ARRAY 8 OF CHAR;
 
-  VAR sym: Int32;  (*last symbol read by scanner*)
+  VAR sym: INTEGER;  (*last symbol read by scanner*)
     IdList, IdList0, undef: Object;
-    pc, dc: Int32;
+    pc, dc: INTEGER;
     error: BOOLEAN;
-    errpos: LONGINT(*INTEGER*); (* voc adaptation *)
+    errpos: INTEGER;
     Statement: PROCEDURE;
     W: Texts.Writer;
-    code: ARRAY 1024 OF Int32(*INTEGER*);
-	name: ARRAY PICS.IdLen OF CHAR;
+    code: ARRAY 1024 OF INTEGER;
 
     table0, table3: ARRAY 16 OF OpCode;  (*for decoding only*)
     table1: ARRAY 4 OF OpCode;
     table2: ARRAY 2 OF OpCode;
 
-  PROCEDURE Mark(num: Int32);
-    VAR p: LONGINT;(*INTEGER*) (* voc adaptation *)
+  PROCEDURE Mark(num: INTEGER);
+    VAR p: INTEGER;
   BEGIN p := PICS.position();
     IF p > errpos+2 THEN
       Texts.WriteString(W, "  pos "); Texts.WriteInt(W, p, 1);
       Texts.WriteString(W, "  err "); Texts.WriteInt(W, num, 1);
-	  Texts.WriteString(W, " "); Texts.WriteString(W, PErrors.errors[num]);
-      Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
-	  Oberon.DumpLog;
+      Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
     END ;
     errpos := p; error := TRUE
   END Mark;
@@ -63,28 +58,21 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     RETURN obj
   END this;
 
-  PROCEDURE enter(id: ARRAY OF CHAR; form, typ, a: Int32);
+  PROCEDURE enter(id: ARRAY OF CHAR; form, typ, a: INTEGER);
     VAR obj: Object;
-  BEGIN 
-     NEW(obj);
-	 COPY(id, obj.name); (* voc adaptation *)
-	 (*obj.name := id;*) 
-	 obj.form := form; 
-	 obj.typ := typ; 
-	 obj.a := a;
-     obj.next := IdList; 
-	 IdList := obj
+  BEGIN NEW(obj); obj.name := id; obj.form := form; obj.typ := typ; obj.a := a;
+    obj.next := IdList; IdList := obj
   END enter;
 
-  PROCEDURE emit(op, a: Int32(*Int32*));
+  PROCEDURE emit(op, a: INTEGER);
   BEGIN code[pc] := op*100H + a; INC(pc)
   END emit;
 
-  PROCEDURE emit1(op, n, a: Int32(*Int32*));
+  PROCEDURE emit1(op, n, a: INTEGER);
   BEGIN code[pc] := ((op+4)*8 + n) * 80H + a; INC(pc)
   END emit1;
 
-  PROCEDURE index(VAR n: Int32);
+  PROCEDURE index(VAR n: INTEGER);
   BEGIN n := 0;
     IF sym = period THEN
       PICS.Get(sym);
@@ -93,7 +81,7 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END index;
 
   PROCEDURE expression;
-    VAR x, y: Object; op, xf, xt, xval, yt, yval: Int32;
+    VAR x, y: Object; op, xf, xt, xval, yt, yval: INTEGER;
   BEGIN xval := 0;
     IF sym = ident THEN x := this(PICS.id); xf := x.form; xt := x.typ; xval := x.a; PICS.Get(sym)
     ELSIF sym = number THEN xf := con; xval := PICS.val; xt := PICS.typ; PICS.Get(sym)
@@ -143,7 +131,7 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END expression;
 
   PROCEDURE term;
-    VAR x, y: Object; n, rel, yf, ya: Int32;
+    VAR x, y: Object; n, rel, yf, ya: INTEGER;
   BEGIN
     IF sym = ident THEN
       x := this(PICS.id); PICS.Get(sym);
@@ -183,8 +171,8 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     END
   END term;
 
-  PROCEDURE condition(VAR link: Int32);
-    VAR L, L0, L1: Int32;
+  PROCEDURE condition(VAR link: INTEGER);
+    VAR L, L0, L1: INTEGER;
   BEGIN term; code[pc] := 0; L := pc; INC(pc);
     IF sym = and THEN
       REPEAT PICS.Get(sym); term; code[pc] := L; L := pc; INC(pc)
@@ -203,8 +191,8 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     link := L
   END condition;
 
-  PROCEDURE fixup(L, k: Int32);
-    VAR L1: Int32;
+  PROCEDURE fixup(L, k: INTEGER);
+    VAR L1: INTEGER;
   BEGIN
     WHILE L # 0 DO L1 := code[L]; code[L] := k+2800H; L := L1 END
   END fixup;
@@ -214,14 +202,14 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     WHILE sym = semicolon DO PICS.Get(sym); Statement END
   END StatSeq;
   
-  PROCEDURE Guarded(VAR L: Int32);
+  PROCEDURE Guarded(VAR L: INTEGER);
   BEGIN condition(L);
     IF sym = then THEN PICS.Get(sym) ELSE Mark(14) END ;
     StatSeq
   END Guarded;
 
   PROCEDURE IfStat;
-    VAR L0, L: Int32;
+    VAR L0, L: INTEGER;
   BEGIN condition(L);
     IF sym = then THEN PICS.Get(sym) ELSE Mark(14) END ;
     StatSeq; L0 := 0; 
@@ -241,7 +229,7 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END IfStat;
 
   PROCEDURE WhileStat;
-    VAR L0, L: Int32;
+    VAR L0, L: INTEGER;
   BEGIN L0 := pc; condition(L);
     IF sym = do THEN PICS.Get(sym) ELSE Mark(14) END ;
     StatSeq; emit(28H, L0); fixup(L, pc);
@@ -254,7 +242,7 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END WhileStat;
 
   PROCEDURE RepeatStat;
-    VAR L0, L: Int32;
+    VAR L0, L: INTEGER;
   BEGIN L0 := pc; StatSeq;
     IF sym = until THEN
       PICS.Get(sym); condition(L);  (*try to use DECFSZ*)
@@ -268,7 +256,7 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     END
   END RepeatStat;
 
-  PROCEDURE Operand1(cd: Int32);
+  PROCEDURE Operand1(cd: INTEGER);
     VAR x: Object;
   BEGIN
     IF sym = ident THEN
@@ -279,8 +267,8 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     END
   END Operand1;
 
-  PROCEDURE Operand2(cd: Int32);
-    VAR x: Object; op, n: Int32;
+  PROCEDURE Operand2(cd: INTEGER);
+    VAR x: Object; op, n: INTEGER;
   BEGIN
     IF sym = ident THEN
       x := this(PICS.id); PICS.Get(sym);
@@ -291,7 +279,7 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END Operand2;
 
   PROCEDURE Statement0;
-    VAR x: Object; w: Int32;
+    VAR x: Object; w: INTEGER;
   BEGIN
     IF sym = ident THEN
       x := this(PICS.id); PICS.Get(sym);
@@ -333,17 +321,11 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END Statement0;
 
   PROCEDURE ProcDecl;
-    VAR typ, partyp, restyp, pc0: Int32;
+    VAR typ, partyp, restyp, pc0: INTEGER;
       obj, res: Object;
       name: ARRAY 32 OF CHAR;
   BEGIN obj := IdList; partyp := 0; restyp := 0; pc0 := pc;
-    IF sym = ident THEN 
-	   (*name := PICS.id; *)
-	   COPY(PICS.id, name); (* voc adaptation *)
-	   PICS.Get(sym) 
-	ELSE 
-	   Mark(10) 
-	END ;
+    IF sym = ident THEN name := PICS.id; PICS.Get(sym) ELSE Mark(10) END ;
     IF sym = lparen THEN (*parameter*)
       PICS.Get(sym);
       IF (sym >= int) & (sym <= bool) THEN
@@ -386,21 +368,14 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END ProcDecl;
 
   PROCEDURE Module;
-    VAR typ: Int32; 
+    VAR typ: INTEGER; name: ARRAY PICS.IdLen OF CHAR;
   BEGIN name[0] := 0X;
     IF sym = module THEN
       PICS.Get(sym);
-      IF sym = ident THEN 
-	     (*name := PICS.id; *) (* voc adaptation *)
-		 COPY (PICS.id, name);
-		 PICS.Get(sym) 
-	  ELSE 
-	     Mark(10) 
-      END ;
+      IF sym = ident THEN name := PICS.id; PICS.Get(sym) ELSE Mark(10) END ;
       IF sym = semicolon THEN PICS.Get(sym) ELSE Mark(20) END ;
     END ;
     Texts.WriteString(W, "PIC compiling "); Texts.WriteString(W, name); Texts.WriteLn(W);
-	Texts.Append(Oberon.Log, W.buf); Oberon.DumpLog;
     IF sym = const THEN
       PICS.Get(sym);
       WHILE sym = ident DO
@@ -432,33 +407,19 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END Module;
 
   PROCEDURE Compile*;
-    VAR i, u, v: Int32; obj: Object;
+    VAR i, u, v: INTEGER; obj: Object;
       T: Texts.Text;
-	  S: Texts.Scanner; (* voc adaptation *)
-      beg, end, time: (*Int32*)LONGINT; (* voc adaptation *)
-  BEGIN 
-  (*Oberon.GetSelection(T, beg, end, time);*)
-  beg := 0;
-  Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
-  Texts.Scan(S);
-    NEW(T);
-    Texts.Open(T, S.s);
-	IF T.len > 0 THEN
-       (*IF time >= 0 THEN*)
-         IdList := IdList0; PICS.Init(T, beg); pc := 1; dc := 12; error := FALSE; errpos := 0;
-         PICS.Get(sym); Module;
-         Texts.Append(Oberon.Log, W.buf);
-		 Oberon.DumpLog;
-       (*END*)
-	ELSE
-	   Texts.WriteString(W, S.s); Texts.WriteString(W, " not found");
-	   Texts.WriteLn(W); Texts.Append (Oberon.Log, W.buf);
-	   Oberon.DumpLog;
-	END
+      beg, end, time: INTEGER;
+  BEGIN Oberon.GetSelection(T, beg, end, time);
+    IF time >= 0 THEN
+      IdList := IdList0; PICS.Init(T, beg); pc := 1; dc := 12; error := FALSE; errpos := 0;
+      PICS.Get(sym); Module;
+      Texts.Append(Oberon.Log, W.buf)
+    END
   END Compile;
 
   PROCEDURE Decode*;
-    VAR i, u, v: Int32; obj: Object;
+    VAR i, u, v: INTEGER; obj: Object;
   BEGIN obj := IdList;
       WHILE obj # IdList0 DO
         Texts.WriteInt(W, obj.form, 4); Texts.WriteInt(W, obj.typ, 4); Texts.WriteInt(W, obj.a, 4);
@@ -466,7 +427,6 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
         obj := obj.next
       END ;
       Texts.Append(Oberon.Log, W.buf);
-	  Oberon.DumpLog;
       FOR i := 0 TO pc-1 DO
         Texts.WriteInt(W, i, 4); u := code[i]; Texts.WriteHex(W, u); Texts.Write(W, " ");
         v := u DIV 1000H; u := u MOD 1000H;
@@ -487,8 +447,7 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
         END ;
         Texts.WriteLn(W)
       END ;
-      Texts.Append(Oberon.Log, W.buf);
-	  Oberon.DumpLog;
+      Texts.Append(Oberon.Log, W.buf)
   END Decode;
 
   (*------------ Procedures for loading code into PIC ------------*)
@@ -498,27 +457,27 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     bit 1: clock, PIC B6 *)
 
   PROCEDURE delay;  (* >3us *)
-    VAR t: Int32;
+    VAR t: INTEGER;
   BEGIN t :=8;
     REPEAT DEC(t) UNTIL t = 0
   END delay;
 
   PROCEDURE delay1;  (*10ms*)
-    VAR T: LONGINT(*Int32*); (* voc adaptation *)
+    VAR T: INTEGER;
   BEGIN T := Oberon.Time() + 10;
     REPEAT UNTIL Oberon.Time() >= T
   END delay1;
 
-  PROCEDURE bits(x: LONGINT; n: Int32); (* voc adaptation *)
-    VAR b: Int32;
+  PROCEDURE bits(x, n: INTEGER);
+    VAR b: INTEGER;
   BEGIN (*send n bits of x*)
-    REPEAT DEC(n); b := SHORT(x) MOD 2; x := x DIV 2; (* voc adaptation *)
+    REPEAT DEC(n); b := x MOD 2; x := x DIV 2;
       SYSTEM.PUT(gpio, b+2); SYSTEM.PUT(gpio, b)
     UNTIL n = 0
   END bits;
 
-  PROCEDURE SendWord(x: Int32(*Int32*));
-    VAR i: Int32;
+  PROCEDURE SendWord(x: INTEGER);
+    VAR i: INTEGER;
   BEGIN bits(2, 6);  (*load cmd*)
     bits(x*2, 16);  (*data*)
     bits(8, 6);  (*program cmd*)
@@ -526,18 +485,14 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     bits(6, 6);  (*inc adr cmd*)
   END SendWord;
   
-  PROCEDURE ReceiveWord(VAR x: Int32(*Int32*));
-    VAR a: Int32;  i: LONGINT(*Int32*); b: SYSTEM.BYTE; (* voc adaptation *)
-		bool : BOOLEAN; sint : SHORTINT; (* voc adaptation *)
+  PROCEDURE ReceiveWord(VAR x: INTEGER);
+    VAR a,  i: INTEGER; b: BYTE;
   BEGIN SYSTEM.PUT(gpio, 3); bits(4, 6);  (*read cmd*)
     delay; a := 0; i := 16;
     REPEAT SYSTEM.PUT(gpio, 3); SYSTEM.PUT(gpio, 1); delay;
       SYSTEM.PUT(gpoc, 2); (*switch to input*)
-      SYSTEM.GET(gpio, b); 
-	  b := SYSTEM.VAL(SHORTINT, b) DIV 40H MOD 2;  (*bit 6*) (* voc adaptation *)
-      bool := SYSTEM.BIT(gpio, 0); (* voc adaptation *)
-	  IF bool THEN sint := 1 ELSE sint := 0 END; (* voc adaptation *)
-	  a := sint * 32768(*8000H*) + (a DIV  2); (* voc adaptation *)
+      SYSTEM.GET(gpio, b); b := b DIV 40H MOD 2;  (*bit 6*)
+      a := ORD(SYSTEM.BIT(gpio, 0)) * 8000H + (a DIV 2);
       SYSTEM.PUT(gpoc, 3); delay; (*switch back to output*); DEC(i)
     UNTIL i = 0;
     x := a DIV 2 MOD 4000H;
@@ -549,17 +504,15 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
   END Reset;
 
   PROCEDURE Program*;
-    VAR i: Int32;
+    VAR i: INTEGER;
   BEGIN Reset; Texts.WriteString(W, "programming PIC ... "); Texts.Append(Oberon.Log, W.buf);
-    Oberon.DumpLog;
     delay1; i := 0;
     WHILE i < pc DO SendWord(code[i]); INC(i) END ;
-    Texts.WriteString(W, "done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
-	Oberon.DumpLog;
+    Texts.WriteString(W, "done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
   END Program;
 
   PROCEDURE Configure*;
-    VAR i, x: Int32; S: Texts.Scanner;
+    VAR i, x: INTEGER; S: Texts.Scanner;
   BEGIN Reset;
     Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos); Texts.Scan(S);
     Texts.WriteString(W, "confirguring PIC  "); Texts.WriteHex(W, S.i);
@@ -569,31 +522,25 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
     bits(1, 6); bits(7, 6); bits(8, 6); delay; bits(1, 6); bits(7, 6);
     ReceiveWord(x);
     Texts.WriteHex(W, x); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
-	Oberon.DumpLog;
   END Configure;
 
   PROCEDURE EraseProgram*;
   BEGIN Reset; Texts.WriteString(W, "erase program"); Texts.Append(Oberon.Log, W.buf);
-    Oberon.DumpLog;
     SYSTEM.PUT(gpio, 0); delay1;
     SendWord(-1); bits(9, 6); bits(8, 6); delay1;
-    Texts.WriteString(W, "done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
-	Oberon.DumpLog;
+    Texts.WriteString(W, "done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
   END EraseProgram;
   
   PROCEDURE EraseData*;
   BEGIN Reset; Texts.WriteString(W, "erase data"); Texts.Append(Oberon.Log, W.buf);
-    Oberon.DumpLog;
     SYSTEM.PUT(gpio, 0); delay1;
     SendWord(-1); bits(11, 6); bits(8, 6); delay1;
-    Texts.WriteString(W, "done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
-	Oberon.DumpLog;
+    Texts.WriteString(W, "done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
   END EraseData;
   
   PROCEDURE Verify*;
-    VAR i, x: Int32;
+    VAR i, x: INTEGER;
   BEGIN Reset; Texts.WriteString(W, "verifying PIC ... "); Texts.Append(Oberon.Log, W.buf);
-  Oberon.DumpLog;
     SYSTEM.PUT(gpio, 0); delay1;
     i := 0;
     WHILE i < pc DO
@@ -603,11 +550,10 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
       ELSE INC(i)
       END
     END ;
-    Texts.WriteString(W, " done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf);
-	Oberon.DumpLog;
+    Texts.WriteString(W, " done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
   END Verify;
 
-  PROCEDURE enter1(id: CHAR; form, typ, a: Int32);
+  PROCEDURE enter1(id: CHAR; form, typ, a: INTEGER);
     VAR obj: Object;
   BEGIN NEW(obj); obj.name[0] := id; obj.form := form; obj.typ := typ; obj.a := a;
     obj.next := IdList; IdList := obj
@@ -615,7 +561,6 @@ MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
 
 BEGIN Texts.OpenWriter(W); Texts.WriteString(W, "PICL  8.8.2014");
   Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf); NEW(undef);
-  Oberon.DumpLog;
   (* instruction names for decoder*)
   table0[0] := "MOVWF"; table0[1] := "CLRF "; table0[2] := "SUBWF"; table0[3] := "DECF ";
   table0[4] := "IORWF"; table0[5] := "ANDWF"; table0[6] := "XORWF"; table0[7] := "ADDWF";
@@ -631,9 +576,6 @@ BEGIN Texts.OpenWriter(W); Texts.WriteString(W, "PICL  8.8.2014");
   
   (*predefined registers A, B, S, T / timer or option*)
   enter1("T", 1, 2, 1); enter1("S", 1, 2, 3); enter1("A", 1, 2, 5); enter1("B", 1, 2, 6);
-  IdList0 := IdList; Statement := Statement0; 
-  (*Reset*) (* voc adaptation *)
-  Compile;
-  POutput.DumpCode(name, code, pc);
+  IdList0 := IdList; Statement := Statement0; Reset
 END PICL. 
 
