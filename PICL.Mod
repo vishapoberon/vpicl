@@ -415,7 +415,7 @@ BEGIN L0 := pc; StatSeq;
     (*Oberon.GetSelection(T, beg, end, time);
     IF time >= 0 THEN*)
     beg := 0; (* voc adaptation; -- noch *)
-    Texts.OpenScanner(S, Oberon.Par.text, Oberon.par.pos);
+    Texts.OpenScanner(S, Oberon.Par.text, Oberon.Par.pos);
     Texts.Scan(S);
     NEW(T);
     Texts.Open(T, S.s);
@@ -463,7 +463,7 @@ BEGIN L0 := pc; StatSeq;
   (* Port represents a 2-wire connection to the PIC-board:
     bit 0: data, PIC B7
     bit 1: clock, PIC B6 *)
-
+(*
   PROCEDURE delay;  (* >3us *)
     VAR t: INTEGER;
   BEGIN t :=8;
@@ -471,7 +471,7 @@ BEGIN L0 := pc; StatSeq;
   END delay;
 
   PROCEDURE delay1;  (*10ms*)
-    VAR T: INTEGER;
+    VAR T: LONGINT;
   BEGIN T := Oberon.Time() + 10;
     REPEAT UNTIL Oberon.Time() >= T
   END delay1;
@@ -494,7 +494,7 @@ BEGIN L0 := pc; StatSeq;
   END SendWord;
   
   PROCEDURE ReceiveWord(VAR x: INTEGER);
-    VAR a,  i: INTEGER; b: BYTE;
+    VAR a,  i: INTEGER; b: SYSTEM.BYTE;
   BEGIN SYSTEM.PUT(gpio, 3); bits(4, 6);  (*read cmd*)
     delay; a := 0; i := 16;
     REPEAT SYSTEM.PUT(gpio, 3); SYSTEM.PUT(gpio, 1); delay;
@@ -560,11 +560,29 @@ BEGIN L0 := pc; StatSeq;
     END ;
     Texts.WriteString(W, " done"); Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
   END Verify;
-
+*)
   PROCEDURE enter1(id: CHAR; form, typ, a: INTEGER);
     VAR obj: Object;
   BEGIN NEW(obj); obj.name[0] := id; obj.form := form; obj.typ := typ; obj.a := a;
     obj.next := IdList; IdList := obj
   END enter1;
 
-BEGIN Texts.
+BEGIN Texts.OpenWriter(W); Texts.WriteString(W, "PICL  8.8.2014");
+  Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf); NEW(undef);
+  (* instruction names for decoder*)
+  table0[0] := "MOVWF"; table0[1] := "CLRF "; table0[2] := "SUBWF"; table0[3] := "DECF ";
+  table0[4] := "IORWF"; table0[5] := "ANDWF"; table0[6] := "XORWF"; table0[7] := "ADDWF";
+  table0[8] := "MOVFW"; table0[9] := "COMF "; table0[10] := "INCF "; table0[11] := "DECFSZ";
+  table0[12] := "RRF  "; table0[13] := "RLF  "; table0[14] := "SWAPF"; table0[15] := "INCFSZ";
+
+  table1[0] := "BCF  "; table1[1] := "BSF  "; table1[2] := "BTFSC"; table1[3] := "BTFSS";
+  table2[0] := "CALL "; table2[1] := "GOTO ";
+
+  table3[0] := "MOVLW"; table3[4] := "RETLW";
+  table3[8] := "IORLW"; table3[9] := "ANDLW"; table3[10] := "XORLW";
+  table3[12] := "SUBLW"; table3[14] := "ADDLW";
+
+  (*predefined registers A, B, S, T / timer or option*)
+  enter1("T", 1, 2, 1); enter1("S", 1, 2, 3); enter1("A", 1, 2, 5); enter1("B", 1, 2, 6);
+  IdList0 := IdList; Statement := Statement0; (*Reset*)
+END PICL.
