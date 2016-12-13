@@ -14,22 +14,22 @@ CONST IdLen * = 32; NofKeys = 25;
   int = 42; set = 43; bool = 44;
   const = 50; begin = 51; proced = 52; module = 53; eof = 54;
 
-  VAR val * , typ * : INTEGER;
+  VAR val * , typ * : LONGINT;
   id * : ARRAY IdLen OF CHAR;
 
   ch: CHAR;  (*lookahead*)
-  K: INTEGER;
+  K: LONGINT;
   R: Texts.Reader;
   W: Texts.Writer;
   key: ARRAY NofKeys, 16 OF CHAR;
-  symno: ARRAY NofKeys OF INTEGER;
+  symno: ARRAY NofKeys OF LONGINT;
 
 PROCEDURE position* (): LONGINT;
 BEGIN RETURN Texts.Pos(R)
 END position;
 
-PROCEDURE Ident (VAR sym: INTEGER);
-  VAR i, j, m: INTEGER;
+PROCEDURE Ident (VAR sym: LONGINT);
+  VAR i, j, m: LONGINT;
 BEGIN i := 0;
   REPEAT
     IF i < IdLen - 1 THEN id[i] := ch; INC(i) END ;
@@ -50,8 +50,8 @@ BEGIN val := 0; typ := 1;
   UNTIL (ch < "0") OR (ch > "9")
 END Number;
 
-PROCEDURE GetDigit (): INTEGER;
-  VAR d: INTEGER;
+PROCEDURE GetDigit (): LONGINT;
+  VAR d: LONGINT;
 BEGIN
   IF ("0" <= ch) & (ch <= "9") THEN d := ORD(ch) - 30H
   ELSIF ("A" <= ch) & (ch <= "F") THEN d := ORD(ch) - 37H
@@ -61,11 +61,11 @@ BEGIN
 END GetDigit;
 
 PROCEDURE Hex;
-  VAR d1, d0: INTEGER;
+  VAR d1, d0: LONGINT;
 BEGIN val := GetDigit() * 10H + GetDigit(); typ := 2
 END Hex;
 
-PROCEDURE Get* (VAR sym: INTEGER);
+PROCEDURE Get* (VAR sym: LONGINT);
 BEGIN
   WHILE (ch <= " ") OR (ch = "{") DO
     IF ch = "{" THEN
@@ -118,7 +118,7 @@ PROCEDURE Init* (T: Texts.Text; pos: LONGINT);
 BEGIN Texts.OpenReader(R, T, pos); Texts.Read(R, ch)
 END Init;
 
-PROCEDURE Enter (word: ARRAY OF CHAR; val: INTEGER);
+PROCEDURE Enter (word: ARRAY OF CHAR; val: LONGINT);
 BEGIN key[K] := word; symno[K] := val; INC(K)
 END Enter;
 
