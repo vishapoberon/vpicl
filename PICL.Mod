@@ -30,7 +30,7 @@ TYPE Object = POINTER TO ObjDesc;
   IdList, IdList0, undef: Object;
   pc, dc: INTEGER;
   error: BOOLEAN;
-  errpos: INTEGER;
+  errpos: LONGINT;
   Statement: PROCEDURE;
   W: Texts.Writer;
   code: ARRAY 1024 OF INTEGER;
@@ -40,7 +40,7 @@ TYPE Object = POINTER TO ObjDesc;
   table2: ARRAY 2 OF OpCode;
 
 PROCEDURE Mark (num: INTEGER);
-  VAR p: INTEGER;
+  VAR p: LONGINT;
 BEGIN p := PICS.position();
   IF p > errpos + 2 THEN
     Texts.WriteString(W, "  pos "); Texts.WriteInt(W, p, 1);
@@ -409,9 +409,17 @@ BEGIN L0 := pc; StatSeq;
   PROCEDURE Compile*;
     VAR i, u, v: INTEGER; obj: Object;
       T: Texts.Text;
+      S: Texts.Scanner; (* voc adaptation, for scanning commandline arguments -- noch *)
       beg, end, time: INTEGER;
-  BEGIN Oberon.GetSelection(T, beg, end, time);
-    IF time >= 0 THEN
+  BEGIN 
+    (*Oberon.GetSelection(T, beg, end, time);
+    IF time >= 0 THEN*)
+    beg := 0; (* voc adaptation; -- noch *)
+    Texts.OpenScanner(S, Oberon.Par.text, Oberon.par.pos);
+    Texts.Scan(S);
+    NEW(T);
+    Texts.Open(T, S.s);
+    IF T.len > 0 THEN
       IdList := IdList0; PICS.Init(T, beg); pc := 1; dc := 12; error := FALSE; errpos := 0;
       PICS.Get(sym); Module;
       Texts.Append(Oberon.Log, W.buf)
