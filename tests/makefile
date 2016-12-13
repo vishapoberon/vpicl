@@ -2,7 +2,7 @@
 
 
 all:
-	PICL Assignments.picl
+	./PICL Assignments.picl
 	objcopy -I binary -O ihex Assignments.bin Assignments.hex
 
 run:

@@ -1,6 +1,7 @@
 MODULE PICL;  (*NW 22.2.2005 / 16.10.2014*)
 IMPORT Texts, Oberon, PICS, SYSTEM,
-       POutput(*to dump generated code, voc adaptation; -- noch *);
+       POutput,(*to dump generated code, voc adaptation; -- noch *)
+       PErrors(*for better error reporting; -- noch *);
 
 CONST var = 1; con = 2; proc = 3;   (*item forms*)
   intT = 1; setT = 2; boolT = 3;    (*types*)
@@ -47,6 +48,7 @@ BEGIN p := PICS.position();
   IF p > errpos + 2 THEN
     Texts.WriteString(W, "  pos "); Texts.WriteInt(W, p, 1);
     Texts.WriteString(W, "  err "); Texts.WriteInt(W, num, 1);
+    Texts.WriteString(W, " "); Texts.WriteString(W, PErrors.errors[num]);
     Texts.WriteLn(W); Texts.Append(Oberon.Log, W.buf)
   END ;
   errpos := p; error := TRUE
@@ -62,7 +64,7 @@ END this;
 
 PROCEDURE enter (id: ARRAY OF CHAR; form, typ, a: LONGINT);
   VAR obj: Object;
-BEGIN NEW(obj); obj.name := id; obj.form := form; obj.typ := typ; obj.a := a;
+BEGIN NEW(obj); (*obj.name := id;*) COPY(id, obj.name); obj.form := form; obj.typ := typ; obj.a := a;
   obj.next := IdList; IdList := obj
 END enter;
 
@@ -325,7 +327,7 @@ BEGIN L0 := pc; StatSeq;
   PROCEDURE ProcDecl;
     VAR typ, partyp, restyp, pc0: LONGINT;
       obj, res: Object;
-      name: ARRAY 32 OF CHAR;
+      name: ARRAY PICS.IdLen OF CHAR;
   BEGIN obj := IdList; partyp := 0; restyp := 0; pc0 := pc;
     IF sym = ident THEN name := PICS.id; PICS.Get(sym) ELSE Mark(10) END ;
     IF sym = lparen THEN (*parameter*)
