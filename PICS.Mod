@@ -1,7 +1,7 @@
 MODULE PICS;  (* NW 22.2.2005 / 13.8.2014    Scanner for PIC compiler*)
 IMPORT Texts, Oberon;
 
-CONST IdLen * = 64; NofKeys = 25;
+CONST IdLen * = 32; NofKeys = 25;
   (*symbols*) null = 0;
   ast = 1; slash = 2; plus = 3; minus = 4; not = 5; and = 6; or = 7;
   eql = 10; neq = 11; geq = 12; lss = 13; leq = 14; gtr = 15;
