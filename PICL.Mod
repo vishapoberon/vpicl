@@ -585,4 +585,6 @@ BEGIN Texts.OpenWriter(W); Texts.WriteString(W, "PICL  8.8.2014");
   (*predefined registers A, B, S, T / timer or option*)
   enter1("T", 1, 2, 1); enter1("S", 1, 2, 3); enter1("A", 1, 2, 5); enter1("B", 1, 2, 6);
   IdList0 := IdList; Statement := Statement0; (*Reset*)
+  Compile;
+  POutput.DumpCode(name, code, pc)
 END PICL.

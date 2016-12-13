@@ -1,12 +1,13 @@
 MODULE POutput;
-IMPORT Files, Strings, PTypes;
-TYPE Int32 = INTEGER;
+IMPORT Files, Strings;
+TYPE Int32 = LONGINT;
 
 
 
   PROCEDURE DumpCode*(VAR name: ARRAY OF CHAR; VAR code: ARRAY OF Int32; pc: INTEGER);
-  VAR i : INTEGER;
-      f : Files.File;
+  VAR 
+    i : INTEGER;
+    f : Files.File;
 	  r : Files.Rider;
 	  fname: ARRAY 64 OF CHAR;
   BEGIN
