@@ -372,7 +372,7 @@ BEGIN L0 := pc; StatSeq;
   END ProcDecl;
 
   PROCEDURE Module;
-    VAR typ: LONGINT; name: ARRAY PICS.IdLen OF CHAR;
+    VAR typ: LONGINT; (*name: ARRAY PICS.IdLen OF CHAR;*)
   BEGIN name[0] := 0X;
     IF sym = module THEN
       PICS.Get(sym);
