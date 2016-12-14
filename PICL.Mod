@@ -64,7 +64,7 @@ END this;
 
 PROCEDURE enter (id: ARRAY OF CHAR; form, typ, a: LONGINT);
   VAR obj: Object;
-BEGIN NEW(obj); (*obj.name := id;*) COPY(id, obj.name); obj.form := form; obj.typ := typ; obj.a := a;
+BEGIN NEW(obj); obj.name := id; obj.form := form; obj.typ := typ; obj.a := a;
   obj.next := IdList; IdList := obj
 END enter;
 
